@@ -1,0 +1,84 @@
+"""
+Given a sequence, find the length of the longest palindromic subsequence in it.
+
+Ex:
+
+Input: BBABCBCAB
+Output: 7 (BABCBAB is the longest palindromic subsequence)
+"""
+
+def is_palindrome(input_str):
+    len_str = len(input_str)
+    if len_str == 0:
+        return False
+
+    for i in range(len_str // 2):
+        if input_str[i] != input_str[len_str - i - 1]:
+            return False
+
+    return True
+
+
+# Naive recursive solution that doesn't eliminate recalculation of subproblems
+def lps_naive(input_str, start_index, end_index):
+    # 1) Base Case (1): Single character is a palindrome
+    if start_index == end_index:
+        return 1
+    # 2) Base Case (2): String length of 2 and the two chars are equal
+    if start_index + 1 == end_index and input_str[start_index] == \
+            input_str[end_index]:
+        return 2
+    # 3) General Case (1): String length > 2 and first and last chars equal
+    if input_str[start_index] == input_str[end_index]:
+        return lps_naive(input_str, start_index + 1, end_index - 1) + 2
+    # 4) General Case (2): String length > 2 and first and last chars not equal
+    return max(lps_naive(input_str, start_index + 1, end_index),
+               lps_naive(input_str, start_index, end_index - 1))
+
+
+# DP solution that eliminates recalculation of subproblems
+def lps(input_str, start_index, end_index, stored):
+
+    # 1) Base Case (1): Single character is a palindrome
+    if start_index == end_index:
+        return 1
+    # 2) Base Case (2): String length of 2 and the two chars are equal
+    if start_index + 1 == end_index and input_str[start_index] == \
+            input_str[end_index]:
+        return 2
+    # 3) General Case (1): String length > 2 and first and last chars equal
+    if input_str[start_index] == input_str[end_index]:
+        if (start_index + 1, end_index - 1) in stored:
+            return stored[(start_index + 1, end_index - 1)] + 2
+        lps_subsequence = lps(input_str, start_index + 1, end_index - 1,
+                              stored)
+        stored[(start_index + 1, end_index - 1)] = lps_subsequence
+        return lps_subsequence + 2
+    # 4) General Case (2): String length > 2and first and last chars not equal
+    lps_subsequence1 = lps(input_str, start_index + 1, end_index, stored) \
+        if (start_index + 1, end_index) not in stored \
+        else stored[(start_index + 1, end_index)]
+
+    lps_subsequence2 = lps(input_str, start_index, end_index - 1, stored) \
+        if (start_index, end_index - 1) not in stored \
+        else stored[(start_index, end_index - 1)]
+
+    stored[(start_index + 1, end_index)] = lps_subsequence1
+    stored[(start_index, end_index - 1)] = lps_subsequence2
+
+    return max(lps_subsequence1, lps_subsequence2)
+
+
+if __name__ == "__main__":
+    # print(is_palindrome('b'))
+    # print(is_palindrome('aa'))
+    # print(is_palindrome('babcbab'))
+    # print(is_palindrome('babcbabb'))
+    test_str1 = 'GEEKSFORGEEKS'
+    test_str2 = 'BBABCBCAB'
+    temp_1 = dict()
+    temp_2 = dict()
+    print(lps(test_str1, 0, len(test_str1) - 1, temp_1))
+    print(lps(test_str2, 0, len(test_str2) - 1, temp_2))
+    print(lps_naive(test_str1, 0, len(test_str1) - 1))
+    print(lps_naive(test_str2, 0, len(test_str2) - 1))
